@@ -9,7 +9,8 @@ from trajnetplusplustools.interactions import check_interaction, group
 from trajnetplusplustools.interactions import get_interaction_type
 
 import pickle
-from .orca_helper import predict_all
+# 28-02-2021 14:00 - this was commented
+#from .orca_helper import predict_all
 
 def get_type(scene, args):
     '''
@@ -93,6 +94,8 @@ def add_noise(observation):
     observation += np.random.uniform(-thresh, thresh, observation.shape)
     return observation
 
+# 28-02-2021 14:00 - method that uses orca_helper file. Since we do not have rov2 available, we will not use it
+"""
 def orca_validity(scene, goals, pred_len=12, obs_len=9, mode='trajnet', iters=15):
     '''
     Check ORCA can reconstruct scene on rounding (To clean in future)
@@ -113,6 +116,7 @@ def orca_validity(scene, goals, pred_len=12, obs_len=9, mode='trajnet', iters=15
                 # print("ORCA Invalid")
                 return True
     return False
+"""
 
 def all_ped_present(scene):
     """ 
@@ -203,12 +207,15 @@ def trajectory_type(rows, path, fps, track_id=0, args=None):
         if np.random.uniform() < args.acceptance[tag - 1]:
             ## Check Validity
             ## Used in ORCA Datasets to account for rounding sensitivity
+            # 28-02-2021 14:00 - block uses orca_helper file. Since we do not have rov2 available, we will not use it
+            """
             if orca_sensitivity:
                 goals = [goal_dict[path[0].pedestrian] for path in scene]
                 # print('Type III')
                 if orca_validity(scene, goals, args.pred_len, args.obs_len, args.mode):
                     col_count += 1
                     continue
+            """
 
             ## Update Tags
             tags[tag].append(track_id)

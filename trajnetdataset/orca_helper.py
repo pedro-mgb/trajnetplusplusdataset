@@ -1,3 +1,5 @@
+# 28-02-2021 14:00 - this file was commented since it required rvo2 and it did not succeed in instalation
+"""
 import rvo2
 import numpy as np
 
@@ -57,3 +59,4 @@ def predict_all(input_paths, goals, mode, pred_length):
     # states = np.array(trajectories[0])
     # return states
     return trajectories
+"""

@@ -1,5 +1,6 @@
 """ Generating Controlled data for pretraining collision avoidance """
 
+# 28-02-2021 14:00 - since failed to install rvo2 on windows and ubuntu (WSL) - this file should not be used
 import random
 import argparse
 import os

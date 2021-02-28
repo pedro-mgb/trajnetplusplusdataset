@@ -10,7 +10,9 @@ from .scene import Scenes
 from .get_type import trajectory_type
 
 import warnings
+
 warnings.filterwarnings("ignore")
+
 
 def biwi(sc, input_file):
     print('processing ' + input_file)
@@ -71,6 +73,7 @@ def wildtrack(sc, input_file):
             .flatMap(readers.wildtrack)
             .cache())
 
+
 def cff(sc, input_file):
     print('processing ' + input_file)
     return (sc
@@ -79,6 +82,7 @@ def cff(sc, input_file):
             .filter(lambda r: r is not None)
             .cache())
 
+
 def lcas(sc, input_file):
     print('processing ' + input_file)
     return (sc
@@ -86,12 +90,14 @@ def lcas(sc, input_file):
             .map(readers.lcas)
             .cache())
 
+
 def controlled(sc, input_file):
     print('processing ' + input_file)
     return (sc
             .textFile(input_file)
             .map(readers.controlled)
             .cache())
+
 
 def get_trackrows(sc, input_file):
     print('processing ' + input_file)
@@ -101,6 +107,7 @@ def get_trackrows(sc, input_file):
             .filter(lambda r: r is not None)
             .cache())
 
+
 def standard(sc, input_file):
     print('processing ' + input_file)
     return (sc
@@ -108,12 +115,14 @@ def standard(sc, input_file):
             .map(readers.standard)
             .cache())
 
+
 def car_data(sc, input_file):
     print('processing ' + input_file)
     return (sc
             .wholeTextFiles(input_file)
             .flatMap(readers.car_data)
             .cache())
+
 
 def write(input_rows, output_file, args):
     """ Write Valid Scenes without categorization """
@@ -141,18 +150,20 @@ def write(input_rows, output_file, args):
     # validation dataset
     val_rows = input_rows.filter(lambda r: r.frame in val_frames)
     val_output = output_file.format(split='val')
-    val_scenes = Scenes(fps=args.fps, start_scene_id=train_scenes.scene_id, args=args).rows_to_file(val_rows, val_output)
+    val_scenes = Scenes(fps=args.fps, start_scene_id=train_scenes.scene_id, args=args).rows_to_file(val_rows,
+                                                                                                    val_output)
 
     # public test dataset
     test_rows = input_rows.filter(lambda r: r.frame in test_frames)
     test_output = output_file.format(split='test')
-    test_scenes = Scenes(fps=args.fps, start_scene_id=val_scenes.scene_id, args=args) # !!! Chunk Stride
+    test_scenes = Scenes(fps=args.fps, start_scene_id=val_scenes.scene_id, args=args)  # !!! Chunk Stride
     test_scenes.rows_to_file(test_rows, test_output)
 
     # private test dataset
     private_test_output = output_file.format(split='test_private')
     private_test_scenes = Scenes(fps=args.fps, start_scene_id=val_scenes.scene_id, args=args)
     private_test_scenes.rows_to_file(test_rows, private_test_output)
+
 
 def categorize(sc, input_file, args):
     """ Categorize the Scenes """
@@ -161,25 +172,28 @@ def categorize(sc, input_file, args):
     test_fraction = 1 - args.train_fraction - args.val_fraction
 
     train_id = 0
-    if args.train_fraction:
+    # since fractions are double, we should compare them to a small value instead of exactly 0
+    if args.train_fraction > 1e-3:
         print("Categorizing Training Set")
         train_rows = get_trackrows(sc, input_file.replace('split', '').format('train'))
         train_id = trajectory_type(train_rows, input_file.replace('split', '').format('train'),
                                    fps=args.fps, track_id=0, args=args)
 
     val_id = train_id
-    if args.val_fraction:
+    # since fractions are double, we should compare them to a small value instead of exactly 0
+    if args.val_fraction > 1e-3:
         print("Categorizing Validation Set")
         val_rows = get_trackrows(sc, input_file.replace('split', '').format('val'))
         val_id = trajectory_type(val_rows, input_file.replace('split', '').format('val'),
                                  fps=args.fps, track_id=train_id, args=args)
 
-
-    if test_fraction:
+    # since fractions are double, we should compare them to a small value instead of exactly 0
+    if test_fraction > 1e-3:
         print("Categorizing Test Set")
         test_rows = get_trackrows(sc, input_file.replace('split', '').format('test_private'))
         _ = trajectory_type(test_rows, input_file.replace('split', '').format('test_private'),
                             fps=args.fps, track_id=val_id, args=args)
+
 
 def edit_goal_file(old_filename, new_filename):
     """ Rename goal files. 
@@ -189,6 +203,7 @@ def edit_goal_file(old_filename, new_filename):
     shutil.copy("goal_files/train/" + old_filename, "goal_files/train/" + new_filename)
     shutil.copy("goal_files/val/" + old_filename, "goal_files/val/" + new_filename)
     shutil.copy("goal_files/test_private/" + old_filename, "goal_files/test_private/" + new_filename)
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -239,6 +254,8 @@ def main():
 
     # Real datasets conversion
     if not args.synthetic:
+        # datasets used for training / validation
+        """
         write(biwi(sc, 'data/raw/biwi/seq_hotel/obsmat.txt'),
               'output_pre/{split}/biwi_hotel.ndjson', args)
         categorize(sc, 'output_pre/{split}/biwi_hotel.ndjson', args)
@@ -254,6 +271,18 @@ def main():
         write(crowds(sc, 'data/raw/crowds/students003.vsp'),
               'output_pre/{split}/crowds_students003.ndjson', args)
         categorize(sc, 'output_pre/{split}/crowds_students003.ndjson', args)
+        """
+
+        # datasets used for testing (includes testing private); --training_fraction 0 --val_fraction 0
+        write(biwi(sc, 'data/raw/biwi/seq_eth/obsmat.txt'),
+              'output_pre/{split}/biwi_eth.ndjson', args)
+        categorize(sc, 'output_pre/{split}/biwi_eth.ndjson', args)
+        write(crowds(sc, 'data/raw/crowds/crowds_zara02.vsp'),
+              'output_pre/{split}/crowds_zara02.ndjson', args)
+        categorize(sc, 'output_pre/{split}/crowds_zara02.ndjson', args)
+        write(crowds(sc, 'data/raw/crowds/uni_examples.vsp'),
+              'output_pre/{split}/crowds_uni_examples.ndjson', args)
+        categorize(sc, 'output_pre/{split}/crowds_uni_examples.ndjson', args)
 
         # # # new datasets
         # write(lcas(sc, 'data/raw/lcas/test/data.csv'),
@@ -284,6 +313,7 @@ def main():
               'output_pre/{split}/orca_five_synth.ndjson', args)
         categorize(sc, 'output_pre/{split}/orca_five_synth.ndjson', args)
         edit_goal_file('orca_circle_crossing_5ped_1000scenes_.pkl', 'orca_five_synth.pkl')
+
 
 if __name__ == '__main__':
     main()
