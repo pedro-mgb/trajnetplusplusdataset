@@ -1,3 +1,7 @@
+NOTE: This repository contains most of the original implementation for processing datasets to be in Trajnet++ format. Apart from some codestyle changes and minor bugfixes, the major difference here is removal of usage of `rvo2 libary <https://github.com/sybrenstuvel/Python-RVO2/>`_
+This libary was being used for synthetic data generation and processing, but I was unable to use it in Windows. As such, while this version works on windows - following the tutorial below, apart from installing `rvo2 libary <https://github.com/sybrenstuvel/Python-RVO2/>`_ - you cannot convert the ORCA synthetic files to use in Trajnet++ formats. You can get the train and test files (no validation nor ground truth) `here <https://github.com/vita-epfl/trajnetplusplusdata/releases/>`_
+
+
 NEW: Converting new external dataset into TrajNet++ format. `Tutorial <https://thedebugger811.github.io/posts/2020/10/data_conversion/>`_
 
 Install
